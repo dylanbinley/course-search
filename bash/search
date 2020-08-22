@@ -1,2 +1,2 @@
 #!/bin/bash
-cat ../../classes.txt | grep -A 17 "${1}       ${2}" |./a.out ${1} 
+cat ../classes.txt | grep -A 17 "${1}       ${2}" |./a.out ${1} 
