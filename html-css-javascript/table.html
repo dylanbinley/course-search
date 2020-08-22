@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel='stylesheet' href='styles.css'/>
+    </head>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="../data/courses.js"></script>
+    <script         type  = "text/javascript"    src="file.js">
+    </script>
+    <body onload = "loadData(data)">
+        <h1>Welcome to my page</h1>
+        <p>Search for clases below! <br/>
+        For example, search <em>COMP 400-500</em></p>
+        <div>
+            <input type="text" autocomplete = "off" method="put" id="search" placeholder="Search" value="">
+            <input type='submit' onclick="loadLocalClasses();" />
+        </div>
+        <table>
+        </table>
+        <!--<div class = "mypanel"></div>
+        <button type="button"
+                onclick="logData()">
+            Click me to view all rmp data.</button>
+        -->
+
+    </body>
