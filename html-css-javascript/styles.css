@@ -1,51 +1,26 @@
 body {
-    background-color: #EEEEEE;    /* Light blue*/
+    background-color: #FFFFFF;    
     text-align: center;
+    font-family: Helvetica, serif;
 }
-table, td, th {
-    border: 1px solid black;
-
+table { 
+    width: 750px; 
+    border-collapse: collapse; 
+    margin:25px auto;
 }
-tr:nth-child(even) {background-color: #99BADD;}
-
-table {
-    margin-left:auto; 
-    margin-right:auto;
-    border-collapse: collapse;
-    width: 75%;
-    color: #F8F8F8;
-    background-color: #5995DA;      /* Blue */
-    padding: 30px 0px;
-    text-align: center;
-    border: 2px solid #5D6063;
-    border-radius: 5px;
+/* Zebra striping */
+tr:nth-of-type(odd) { 
+    background: #eee; 
 }
-input {
-    border-collapse: collapse;
-    border: 2px solid #5D6063;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    margin-right: 3px;
+th { 
+    background: #3498db; 
+    color: white; 
+    font-weight: bold; 
 }
-th {
-    height: 50px;
+td, th { 
+    padding: 10px; 
+    border: 1px solid #ccc; 
+    text-align: center; 
+    border:black;
+    font-size: 18px;
 }
-
-thead th, tfoot th {
-    font-family: 'Rock Salt', cursive;
-}
-
-th {
-    letter-spacing: 2px;
-}
-
-td {
-    letter-spacing: 1px;
-}
-
-tbody td {
-    text-align: center;
-}
-
-tfoot th {
-    text-align: right;
