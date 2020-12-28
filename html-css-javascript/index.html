@@ -5,18 +5,23 @@
     </head>
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="../data/courses.js"></script>
-    <script         type  = "text/javascript"    src="file.js">
+    <script         type  = "text/javascript"    src="search-courses.js">
     </script>
     <body onload = "onStart(data)">
-        <h1 class="fa">Course search fall 2020</h1>
+        <h1>Course search fall 2020</h1>
         <p>Search for clases below! <br/>
         For example, search <em>COMP 400-500</em></p>
         <div>
-            <input type="text" autocomplete = "off" method="put" id="search" placeholder="Search" 
-                                                                             value="COMP 400-500"
-                    onKeyUp="loadLocalClasses()"
-            />
-            <input type='submit' onclick="loadLocalClasses();" />
+            <input type="text" 
+                   autocomplete = "off" 
+                   method="put" 
+                   id="search" 
+                   placeholder="Search" 
+                   value="COMP 400-500"
+                   onKeyUp="loadLocalClasses()"
+                   />
+            <input type='submit' 
+                   onclick="loadLocalClasses();" />
         </div>
         <table>
         </table>
