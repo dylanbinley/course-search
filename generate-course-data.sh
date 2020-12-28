@@ -1,5 +1,5 @@
 #!/bin/bash
-echo running...
+echo converting course data to JSON...
 
 gcc -o parser ./c-files/JSONparser.c
 gcc -o remove_invalid ./c-files/removeInvalidJSON.c
@@ -34,4 +34,4 @@ rm parser
 rm remove_invalid
 
 echo done! 
-echo the data is stored as this location: data/courses.js
+echo the data is stored as the following location: data/courses.js
