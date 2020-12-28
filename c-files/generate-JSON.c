@@ -34,14 +34,6 @@ int main(int argc, char *argv[0]){
 
     while(fgets(string, 1000, stdin) != NULL){
         if (compareStrings(string,subject, 4)){
-            //firest check for lab or edgecase by going past course number
-            //if it is a lab or edge case, do nothing 
-            //int i = 0;
-            //i = skipToNumber(string, i); 
-            //int c;
-            //while ((c =getchar()) >= '0' && c <= '9'){
-
-            //}
             if (!isRecitation){
                 if (!hasTime){
                     printf("\"days\":\"N/A\", \"time\":\"N/A\",");
@@ -89,7 +81,7 @@ int main(int argc, char *argv[0]){
             printf("\"tLname\":\"N/A\", \"tFname\":\"\",");
         }
         if (!hasEnrollmentInfo){
-            printf("\"capacity\":\"N/A\", \"enrollment\":\"N/A\",\"waitlist_capacity\":\"N/A\",\"waitlist_total\":\"N/A\"");
+            printf("\"capacity\":\"N/A\", \"enrollment\":\"N/A\",\"waitlist_capacity\":\"N/A\",\"waitlist_total\":\"N/A\",");
         }
         printf("\"extra\": \"\"},");
         putchar('\n');
