@@ -10,11 +10,11 @@ typedef struct Course {
 } Course;
 
 static void printCourseNameAndNumber(char* line);
-static void printTimeAndDay(char* line);
-static void printTeacher(char* line);
-static void printEnrollmentInfo(char*line);
-static void printMissingCourseInfo(Course* course);
-static int  printMember(char* input, char* name, int i);
+static void printCourseTimeAndDay(char* line);
+static void printCourseTeacher(char* line);
+static void printCourseEnrollmentInfo(char*line);
+static void printCourseMissingInfo(Course* course);
+static int  printAttribute(char* input, char* attribute, int i);
 static bool newCourseFound(char * line, char * subject);
 static bool isTeacherLine(char * line);
 static bool isScheduleLine(char * line);
@@ -26,7 +26,6 @@ static int  skipToNumber(char * line, int i);
 int main(int argc, char *argv[0]){
     char line[1000];
     char *subject;
-
     if (argc >1){
         subject = argv[1];
     }
@@ -35,12 +34,11 @@ int main(int argc, char *argv[0]){
         return EXIT_FAILURE;
     }
     Course course = {0};
-
     while(fgets(line, 1000, stdin) != NULL){
         if (newCourseFound(line,subject)){
             //finish up previous course
             if (course.isValid){
-                printMissingCourseInfo(&course); 
+                printCourseMissingInfo(&course); 
             }
             //exclude course if it's a recitation
             if (getchar() == 'R'){
@@ -54,22 +52,22 @@ int main(int argc, char *argv[0]){
         }
         if (course.isValid){
             if (!course.hasTeacher && isTeacherLine(line)){ 
-                printTeacher(line);
+                printCourseTeacher(line);
                 course.hasTeacher = true;
             }
             else if (!course.hasTime && isScheduleLine(line)){
-                printTimeAndDay(line);
+                printCourseTimeAndDay(line);
                 course.hasTime = true;
             }
             else if (!course.hasEnrollmentInfo && isEnrollmentLine(line)){
-                printEnrollmentInfo(line);
+                printCourseEnrollmentInfo(line);
                 course.hasEnrollmentInfo = true;
             }
         }    
     }
     //finish printing final course
     if (course.isValid){
-        printMissingCourseInfo(&course);
+        printCourseMissingInfo(&course);
     }
 }
 
@@ -78,7 +76,7 @@ static void printCourseNameAndNumber(char * line){
     int c;
     //print subject
     printf("{"); 
-    i = printMember(line, "subject", i);
+    i = printAttribute(line, "subject", i);
     //print course number
     i = skipWhiteSpace(line, i);
     printf("\"%s\":\"", "number");
@@ -93,7 +91,7 @@ static void printCourseNameAndNumber(char * line){
         printf("=====DELETETHISLINE======");
         return;
     }
-    i = printMember(line, "section", i);
+    i = printAttribute(line, "section", i);
     //print course name
     i = skipWhiteSpace(line, i);
     i = skipWord(line, i);
@@ -115,7 +113,7 @@ static void printCourseNameAndNumber(char * line){
     printf("\",");
 }
 
-static void printTimeAndDay(char*line){
+static void printCourseTimeAndDay(char*line){
     int i = 0;
     int c; 
     //print days
@@ -124,7 +122,7 @@ static void printTimeAndDay(char*line){
     }
     i += 5;
     i = skipWhiteSpace(line, i);
-    i = printMember(line, "days", i);
+    i = printAttribute(line, "days", i);
     //print time
     while (strncmp(&line[i], "Time:", 5) != 0){
         c = line[i++];
@@ -139,7 +137,7 @@ static void printTimeAndDay(char*line){
     printf("\",");
 }
 
-static void printTeacher(char* line){
+static void printCourseTeacher(char* line){
     int i = 0;
     int c; 
     while (strncmp(&line[i], "Instructor:", 11) != 0){
@@ -186,15 +184,15 @@ static void printTeacher(char* line){
     printf("\",");
 }
 
-static void printEnrollmentInfo(char* line){
+static void printCourseEnrollmentInfo(char* line){
     int i = 0;
     char c;
     //print capacity
     i = skipToNumber(line, i);
-    i = printMember(line, "capacity", i);
+    i = printAttribute(line, "capacity", i);
     //print enrollment
     i = skipToNumber(line, i);
-    i = printMember(line, "enrollment", i);
+    i = printAttribute(line, "enrollment", i);
     //print waitlist info
     i = skipWhiteSpace(line, i);
     if (strncmp(&line[i], "Class Wait", 7) != 0){
@@ -222,7 +220,7 @@ static void printEnrollmentInfo(char* line){
     printf("\",");
 }
 
-static void printMissingCourseInfo(Course* course){
+static void printCourseMissingInfo(Course* course){
     if (!course->hasTime){
         printf("\"days\":\"N/A\", \"time\":\"N/A\",");
     }
@@ -235,9 +233,9 @@ static void printMissingCourseInfo(Course* course){
     printf("\"extra\": \"\"},\n");
 }
 
-//prints attribute, returns the int to move cursor forwards
-static int printMember(char* input, char* name, int i) {
-    printf("\"%s\":\"", name);
+//print attribute, return int to move cursor forward
+static int printAttribute(char* input, char* attribute, int i) {
+    printf("\"%s\":\"", attribute);
     int c;
     while ((c =input[i]) != ' '){
         putchar(c);
