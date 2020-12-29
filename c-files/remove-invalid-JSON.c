@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-bool compareStrings(char* s1, char* s2, int length);
+#include <string.h>
+
 int main(){
     char string[1000];
 
@@ -12,7 +13,7 @@ int main(){
             if (string[i] == '}'){
                isValid = true; 
             }
-            if (i < 100 && compareStrings(&string[i], "DELETE", 6)){
+            if (i < 100 && strncmp(&string[i], "DELETE", 5) == 0){
                 isValid = false;
                 break;
             }
@@ -22,12 +23,4 @@ int main(){
         }
 
     }
-}
-bool compareStrings(char* s1, char* s2, int length){
-    for (int i = 0; i < length; i++){
-        if (s1[i] != s2[i]){
-            return false; 
-        } 
-    } 
-    return true; 
 }

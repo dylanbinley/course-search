@@ -1,125 +1,242 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-bool compareStrings(char* s1, char* s2, int length);
-void printCourse(char* string);
-void printTeacher(char* string);
-int printMember(char* input, char* name, int i);
-int skipWhiteSpace(char* string, int i);
-int skipWord(char* string, int i);
-int printClassName(char* input, int i);
-void printTimeAndDay(char* string);
-int printDay(char * string, int i);
-void printTime(char* string, int i);
-void printEnrollmentInfo(char*string);
-int skipToNumber(char * string, int i);
+#include <string.h>
+typedef struct Course {
+    bool isValid;
+    bool hasTime;
+    bool hasTeacher;
+    bool hasEnrollmentInfo;
+} Course;
+
+static void printCourseNameAndNumber(char* line);
+static void printTimeAndDay(char* line);
+static void printTeacher(char* line);
+static void printEnrollmentInfo(char*line);
+static void printMissingCourseInfo(Course* course);
+static int  printMember(char* input, char* name, int i);
+static bool newCourseFound(char * line, char * subject);
+static bool isTeacherLine(char * line);
+static bool isScheduleLine(char * line);
+static bool isEnrollmentLine(char * line);
+static int  skipWhiteSpace(char* line, int i);
+static int  skipWord(char* line, int i);
+static int  skipToNumber(char * line, int i);
+
 int main(int argc, char *argv[0]){
-    char string[1000];
-    char *subject = " ";
+    char line[1000];
+    char *subject;
 
     if (argc >1){
         subject = argv[1];
     }
     else {
-        fprintf(stderr, "%s", "A string argument is needed\n");
+        fprintf(stderr, "%s", "A subject needs to be included\n");
         return EXIT_FAILURE;
     }
-    int count = 0;
-    bool isRecitation = true;
-    //note: only printing first time slots for classes with multiple
-    //may want to change later
-    bool hasTime = false;
-    bool hasTeacher = false;
-    bool hasEnrollmentInfo = false;
+    Course course = {0};
 
-    while(fgets(string, 1000, stdin) != NULL){
-        if (compareStrings(string,subject, 4)){
-            if (!isRecitation){
-                if (!hasTime){
-                    printf("\"days\":\"N/A\", \"time\":\"N/A\",");
-                }
-                if (!hasTeacher){
-                    printf("\"tLname\":\"N/A\", \"tFname\":\"\",");
-                }
-                if (!hasEnrollmentInfo){
-                    printf("\"capacity\":\"N/A\", \"enrollment\":\"N/A\",\"waitlist_capacity\":\"N/A\",\"waitlist_total\":\"N/A\",");
-                }
-                printf("\"extra\": \"\"},");
-                putchar('\n');
+    while(fgets(line, 1000, stdin) != NULL){
+        if (newCourseFound(line,subject)){
+            //finish up previous course
+            if (course.isValid){
+                printMissingCourseInfo(&course); 
             }
+            //exclude course if it's a recitation
             if (getchar() == 'R'){
-                isRecitation = true;
+                course.isValid = false; 
+                continue;
             }
-            else{
-                isRecitation = false;
-                hasTime = false;
-                hasTeacher = false;
-                hasEnrollmentInfo = false;
-                printCourse(string);
+            //set up new course
+            Course newCourse = {true,false,false,false}; 
+            course = newCourse;
+            printCourseNameAndNumber(line);
+        }
+        if (course.isValid){
+            if (!course.hasTeacher && isTeacherLine(line)){ 
+                printTeacher(line);
+                course.hasTeacher = true;
             }
-        }
-        if (!isRecitation && !hasTeacher && (compareStrings(string, "GA", 2) || compareStrings(string, "TA", 2) || 
-                    compareStrings(string, "RA", 2) || compareStrings(string, "DEAN", 4) || compareStrings(string, "INST", 4))){ 
-            printTeacher(string);
-            hasTeacher = true;
-        }
-        else if (!isRecitation && !hasTime && compareStrings(string, "Bldg", 4)){
-            printTimeAndDay(string);
-            hasTime = true;
-        }
-        else if (!isRecitation && compareStrings(string, "Class Enrl", 10)){
-            printEnrollmentInfo(string);
-            hasEnrollmentInfo = true;
-        }
-        count++;
+            else if (!course.hasTime && isScheduleLine(line)){
+                printTimeAndDay(line);
+                course.hasTime = true;
+            }
+            else if (!course.hasEnrollmentInfo && isEnrollmentLine(line)){
+                printEnrollmentInfo(line);
+                course.hasEnrollmentInfo = true;
+            }
+        }    
     }
-    if (!isRecitation){
-        if (!hasTime){
-            printf("\"days\":\"N/A\", \"time\":\"N/A\",");
-        }
-        if (!hasTeacher){
-            printf("\"tLname\":\"N/A\", \"tFname\":\"\",");
-        }
-        if (!hasEnrollmentInfo){
-            printf("\"capacity\":\"N/A\", \"enrollment\":\"N/A\",\"waitlist_capacity\":\"N/A\",\"waitlist_total\":\"N/A\",");
-        }
-        printf("\"extra\": \"\"},");
-        putchar('\n');
+    //finish printing final course
+    if (course.isValid){
+        printMissingCourseInfo(&course);
     }
 }
-bool compareStrings(char* s1, char* s2, int length){
-    for (int i = 0; i < length; i++){
-        if (s1[i] != s2[i]){ return false; } } return true; } void printCourse(char * string){ int i = 0; printf("{"); i = printMember(string, "subject", i);
 
-            i = skipWhiteSpace(string, i);
-            //i = printMember(string, "number", i);
-            printf("\"%s\":\"", "number");
-            int c;
-            while ((c =string[i]) >= '0' && c <= '9'){
-                putchar(c);
-                i++;
-            }
-            printf("\",");
-            i = skipWhiteSpace(string, i);
-            if (string[i] == 'L' || string[i] == '-' || compareStrings(&string[i], "class", 5)){
-                printf("=====DELETETHISLINE======");
-                return;
-            }
-            i = printMember(string, "section", i);
-
-            i = skipWhiteSpace(string, i);
-            i = skipWord(string, i);
-            i = skipWhiteSpace(string, i);
-            i = printClassName(string, i);
-
-        }
-int skipWhiteSpace(char * string, int i){
-    while (string[i] == ' '){
+static void printCourseNameAndNumber(char * line){ 
+    int i = 0; 
+    int c;
+    //print subject
+    printf("{"); 
+    i = printMember(line, "subject", i);
+    //print course number
+    i = skipWhiteSpace(line, i);
+    printf("\"%s\":\"", "number");
+    while ((c =line[i]) >= '0' && c <= '9'){
+        putchar(c);
         i++;
     }
-    return i;
+    printf("\",");
+    //print section number
+    i = skipWhiteSpace(line, i);
+    if (line[i] == 'L' || line[i] == '-' || strncmp(&line[i], "class", 5) == 0){
+        printf("=====DELETETHISLINE======");
+        return;
+    }
+    i = printMember(line, "section", i);
+    //print course name
+    i = skipWhiteSpace(line, i);
+    i = skipWord(line, i);
+    i = skipWhiteSpace(line, i);
+    printf("\"%s\":\"", "name");
+    if (line[i] >= 'a' && line[i] <= 'z'){
+        printf("=====DELETETHISLINE======");
+    }
+    while ((c = line[i]) != EOF && c != '\r' && c != '\n'){
+        if (c == ' '){
+            if ((c = line[++i]) == ' ' || c == '\r' || c == '\n'){
+                break;
+            }
+            putchar(' ');
+        }
+        putchar(c);
+        i++;
+    }
+    printf("\",");
 }
-int printMember(char* input, char* name, int i) {
+
+static void printTimeAndDay(char*line){
+    int i = 0;
+    int c; 
+    //print days
+    while (strncmp(&line[i], "Days:", 5) != 0){
+        c = line[i++];
+    }
+    i += 5;
+    i = skipWhiteSpace(line, i);
+    i = printMember(line, "days", i);
+    //print time
+    while (strncmp(&line[i], "Time:", 5) != 0){
+        c = line[i++];
+    }
+    i += 5;
+    i = skipWhiteSpace(line, i);
+    printf("\"%s\":\"", "time");
+    while ((c = line[i]) != '\r' && c != '\n'){
+        c = line[i++];
+        putchar(c);
+    }
+    printf("\",");
+}
+
+static void printTeacher(char* line){
+    int i = 0;
+    int c; 
+    while (strncmp(&line[i], "Instructor:", 11) != 0){
+        c = line[i++];
+    }
+    i +=11;
+    i = skipWhiteSpace(line, i);
+    if (line[i] == '\r'){
+        printf("\"tLname\": \"N/A\",");
+        printf("\"tFname\": \"\",");
+        return;
+    }
+    if (strncmp(&line[i], "Staff", 5) == 0){
+        printf("\"tLname\": \"Staff\",");
+        printf("\"tFname\": \"\",");
+        return;
+    }
+    printf("\"%s\":\"", "tLname");
+    c = line[i++];
+    putchar(c);
+    while ((c = line[i]) != ',' && c != ' ' && c != '\r'){
+        if (c >= 'A' && c <= 'Z'){
+            c -= 'A'-'a';
+        }
+        putchar(c);
+        i++;
+    }
+    printf("\",");
+    while ((c = line[i]) != ','){ 
+        i++; 
+    }
+    i++;
+    i = skipWhiteSpace(line, i);
+    printf("\"%s\":\"", "tFname");
+    c = line[i++];
+    putchar(c);
+    while ((c = line[i]) != ' ' && c != '\r'){
+        if (c >= 'A' && c <= 'Z'){
+            c -= 'A'-'a';
+        }
+        putchar(c);
+        i++;
+    }
+    printf("\",");
+}
+
+static void printEnrollmentInfo(char* line){
+    int i = 0;
+    char c;
+    //print capacity
+    i = skipToNumber(line, i);
+    i = printMember(line, "capacity", i);
+    //print enrollment
+    i = skipToNumber(line, i);
+    i = printMember(line, "enrollment", i);
+    //print waitlist info
+    i = skipWhiteSpace(line, i);
+    if (strncmp(&line[i], "Class Wait", 7) != 0){
+        printf("\"waitlist_capacity\": \"N/A\",");
+        printf("\"waitlist_total\": \"N/A\","); 
+        return;
+    }
+    i = skipToNumber(line, i);
+    printf("\"%s\":\"", "waitlist_capacity");
+    while ((c =line[i]) != ' ' && c != '\0' && c != '\r' && c != '\n'){
+        putchar(c);
+        i++;
+    }
+    printf("\",");
+    if (c == '\0' || c == '\r' || c == '\n'){
+        printf("\"waitlist_total\": \"N/A\","); 
+        return;
+    }
+    while ((c = getchar()) < '0' || c > '9'){}
+    printf("\"%s\":\"", "waitlist_total");
+    putchar(c);
+    while (!((c = getchar()) < '0' || c > '9')){
+        putchar(c);
+    }
+    printf("\",");
+}
+
+static void printMissingCourseInfo(Course* course){
+    if (!course->hasTime){
+        printf("\"days\":\"N/A\", \"time\":\"N/A\",");
+    }
+    if (!course->hasTeacher){
+        printf("\"tLname\":\"N/A\", \"tFname\":\"\",");
+    }
+    if (!course->hasEnrollmentInfo){
+        printf("\"capacity\":\"N/A\", \"enrollment\":\"N/A\",\"waitlist_capacity\":\"N/A\",\"waitlist_total\":\"N/A\",");
+    }
+    printf("\"extra\": \"\"},\n");
+}
+
+//prints attribute, returns the int to move cursor forwards
+static int printMember(char* input, char* name, int i) {
     printf("\"%s\":\"", name);
     int c;
     while ((c =input[i]) != ' '){
@@ -129,145 +246,43 @@ int printMember(char* input, char* name, int i) {
     printf("\",");
     return i;
 }
-int skipWord(char* string, int i){
-    while (string[i] != ' '){
+
+static bool newCourseFound(char * line, char * subject){
+    return strncmp(line,subject, 4) == 0;
+}
+
+static bool isTeacherLine(char * line){
+    return strncmp(line, "GA", 2) == 0    || 
+           strncmp(line, "TA", 2) == 0    || 
+           strncmp(line, "RA", 2) == 0    || 
+           strncmp(line, "DEAN", 4) == 0  || 
+           strncmp(line, "INST", 4) == 0;
+}
+
+static bool isScheduleLine(char * line){
+    return strncmp(line, "Bldg", 4) == 0;
+}
+
+static bool isEnrollmentLine(char * line){
+    return strncmp(line, "Class Enrl", 10) == 0;
+}
+
+static int skipWhiteSpace(char * line, int i){
+    while (line[i] == ' '){
         i++;
     }
     return i;
 }
-int printClassName(char * input, int i) {
-    printf("\"%s\":\"", "name");
-    int c;
-    if (input[i] >= 'a' && input[i] <= 'z'){
-        printf("=====DELETETHISLINE======");
-    }
-    while ((c = input[i]) != EOF && c != '\r' && c != '\n'){
-        if (c == ' '){
-            if ((c = input[++i]) == ' ' || c == '\r' || c == '\n'){
-                break;
-            }
-            putchar(' ');
-        }
-        putchar(c);
+
+static int skipWord(char* line, int i){
+    while (line[i] != ' '){
         i++;
     }
-    printf("\",");
     return i;
 }
-void printTimeAndDay(char*string){
-    int i = 0;
-    int c; 
-    while (!compareStrings(&string[i], "Days:", 5)){
-        c = string[i++];
-    }
-    i += 5;
-    i = skipWhiteSpace(string, i);
-    i = printMember(string, "days", i);
-    while (!compareStrings(&string[i], "Time:", 5)){
-        c = string[i++];
-    }
-    i +=5;
-    i = skipWhiteSpace(string, i);
-    printTime(string, i);
-}
-void printTime(char*string, int i){
-    char c;
-    printf("\"%s\":\"", "time");
-    while ((c = string[i]) != '\r' && c != '\n'){
-        c = string[i++];
-        putchar(c);
-    }
-    printf("\",");
-}
-void printTeacher(char* string){
-    int i = 0;
-    int c; 
-    while (!compareStrings(&string[i], "Instructor:", 11)){
-        c = string[i++];
-    }
-    i +=11;
-    i = skipWhiteSpace(string, i);
-    if (string[i] == '\r'){
-        printf("\"tLname\": \"N/A\",");
-        printf("\"tFname\": \"\",");
-        return;
-    }
-    if (compareStrings(&string[i], "Staff", 5)){
-        printf("\"tLname\": \"Staff\",");
-        printf("\"tFname\": \"\",");
-        return;
-    }
-    printf("\"%s\":\"", "tLname");
-    c = string[i++];
-    putchar(c);
-    while ((c = string[i]) != ',' && c != ' ' && c != '\r'){
-        if (c >= 'A' && c <= 'Z'){
-            c -= 'A'-'a';
-        }
-        putchar(c);
-        i++;
-    }
-    printf("\",");
-    //skip to comma
-    while ((c = string[i]) != ','){
-        i++;
-    }
-    i++;
-    i = skipWhiteSpace(string, i);
 
-    printf("\"%s\":\"", "tFname");
-    c = string[i++];
-    putchar(c);
-    while ((c = string[i]) != ' ' && c != '\r'){
-        if (c >= 'A' && c <= 'Z'){
-            c -= 'A'-'a';
-        }
-        putchar(c);
-        i++;
-    }
-    printf("\",");
-}
-void printEnrollmentInfo(char* string){
-    int i = 0;
-    i = skipToNumber(string, i);
-    i = printMember(string, "capacity", i);
-
-    i = skipToNumber(string, i);
-    i = printMember(string, "enrollment", i);
-    i = skipWhiteSpace(string, i);
-    if (!compareStrings(&string[i], "Class Wait", 7)){
-        printf("\"waitlist_capacity\": \"N/A\",");
-        printf("\"waitlist_total\": \"N/A\","); 
-        return;
-    }
-    i = skipToNumber(string, i);
-    printf("\"%s\":\"", "waitlist_capacity");
-    int c;
-    while ((c =string[i]) != ' ' && c != '\0' && c != '\r' && c != '\n'){
-        putchar(c);
-        i++;
-    }
-    printf("\",");
-    if (c == '\0' || c == '\r' || c == '\n'){
-        printf("\"waitlist_total\": \"N/A\","); 
-        return;
-    }
-
-    //get waitlist total on next line, if it is there
-    while ((c = getchar()) < '0' || c > '9'){
-        //skip to number
-    }
-    printf("\"%s\":\"", "waitlist_total");
-    putchar(c);
-    while (!((c = getchar()) < '0' || c > '9')){
-        putchar(c);
-    }
-    printf("\",");
-
-
-}
-int skipToNumber(char* string, int i){
-    while (!(string[i] >='0' && string[i] <='9')){
+static int skipToNumber(char* line, int i){
+    while (!(line[i] >='0' && line[i] <='9')){
         i++;
     }
     return i;
