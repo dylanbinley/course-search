@@ -23,7 +23,7 @@ static int  skipWhiteSpace(char* line, int i);
 static int  skipWord(char* line, int i);
 static int  skipToNumber(char * line, int i);
 
-int main(int argc, char *argv[0]){
+int main(int argc, char **argv){
     char line[1000];
     char *subject;
     if (argc >1){
