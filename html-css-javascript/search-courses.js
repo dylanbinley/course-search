@@ -11,14 +11,18 @@ function onStart(data){
             for (var i = 0; i< professors.length; i++){
                 rmpData.push(professors[i]);
             }
-            loadLocalClasses()
+            searchCourses()
         });
     }
 }
 
-function loadLocalClasses(){
-    var parsedInput = splitInput(document.getElementById("search").value); 
+function searchCourses(){
     let selectedCourses = []
+    var parsedInput = splitInput(document.getElementById("search").value); 
+    if (parsedInput.length === 0){ //empty search bar
+        generateTable(null);
+        return;
+    }
     for (var i = 0; i < courses.length; i++){
         if (courses[i].time != "TBA" 
             && courses[i].section < 100 //exclude recitations 
@@ -28,37 +32,43 @@ function loadLocalClasses(){
             selectedCourses.push(courses[i]);
         }
     }
-    //sort by course number
     selectedCourses.sort(function(course1,course2){
         return course1.number - course2.number
     })
-    //append rows to table
+    generateTable(selectedCourses);
+}
+
+function generateTable(selectedCourses){
     let table= document.querySelector("table");
     table.innerHTML = ` <thead>
-                            <tr>
-                                <th>Course Number</th>
-                                <th>Course Name</th>
-                                <th>Time</th>
-                                <th>Professor</th>
-                                <th>Rating</th>
-                                <th>Status</th>
-                            </tr>
-                       </thead>
-                     `;
+                        <tr>
+                            <th>Course Number</th>
+                            <th>Course Name</th>
+                            <th>Time</th>
+                            <th>Professor</th>
+                            <th>Rating</th>
+                            <th>Status</th>
+                        </tr>
+                   </thead>
+                 `;
+    if (selectedCourses === null){
+        return;
+    }
     selectedCourses.forEach(function(course){
-            let courseNumber= document.createTextNode(course.subject + " " + course.number + " " + course.section);
-            let courseName = document.createTextNode(course.name);
-            let time = document.createTextNode(course.days + ' ' + course.time);
-            let professor = getProfessorObj(course)
-            let classStatus= getClassStatus(course)
-            let row = table.insertRow();
-            row.insertCell().appendChild(courseNumber);
-            row.insertCell().appendChild(courseName);
-            row.insertCell().appendChild(time);
-            row.insertCell().appendChild(professor.name);
-            row.insertCell().appendChild(professor.rating);
-            row.insertCell().appendChild(classStatus);
+        let courseNumber= document.createTextNode(course.subject + " " + course.number + " " + course.section);
+        let courseName = document.createTextNode(course.name);
+        let time = document.createTextNode(course.days + ' ' + course.time);
+        let professor = getProfessorObj(course)
+        let classStatus= getClassStatus(course)
+        let row = table.insertRow();
+        row.insertCell().appendChild(courseNumber);
+        row.insertCell().appendChild(courseName);
+        row.insertCell().appendChild(time);
+        row.insertCell().appendChild(professor.name);
+        row.insertCell().appendChild(professor.rating);
+        row.insertCell().appendChild(classStatus);
     });
+
 }
 
 function createImage(type){
