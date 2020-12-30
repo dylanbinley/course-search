@@ -14,7 +14,7 @@ static void printCourseTimeAndDay(char* line);
 static void printCourseTeacher(char* line);
 static void printCourseEnrollmentInfo(char*line);
 static void printCourseMissingInfo(Course* course);
-static int  printAttribute(char* input, char* attribute, int i);
+static int printAttribute(char* input, char* attribute, int i, bool isString);
 static bool newCourseFound(char * line, char * subject);
 static bool isTeacherLine(char * line);
 static bool isScheduleLine(char * line);
@@ -79,22 +79,22 @@ static void printCourseNameAndNumber(char * line){
     int c;
     //print subject
     printf("{"); 
-    i = printAttribute(line, "subject", i);
+    i = printAttribute(line, "subject", i, true);
     //print course number
     i = skipWhiteSpace(line, i);
-    printf("\"%s\":\"", "number");
+    printf("\"%s\":", "number");
     while ((c =line[i]) >= '0' && c <= '9'){
         putchar(c);
         i++;
     }
-    printf("\",");
+    printf(",");
     //print section number
     i = skipWhiteSpace(line, i);
     if (line[i] == 'L' || line[i] == '-' || strncmp(&line[i], "class", 5) == 0){
         printf("=====DELETETHISLINE======");
         return;
     }
-    i = printAttribute(line, "section", i);
+    i = printAttribute(line, "section", i, true);
     //print course name
     i = skipWhiteSpace(line, i);
     i = skipWord(line, i);
@@ -125,7 +125,7 @@ static void printCourseTimeAndDay(char*line){
     }
     i += 5;
     i = skipWhiteSpace(line, i);
-    i = printAttribute(line, "days", i);
+    i = printAttribute(line, "days", i, true);
     //print time
     while (strncmp(&line[i], "Time:", 5) != 0){
         c = line[i++];
@@ -191,10 +191,10 @@ static void printCourseEnrollmentInfo(char* line){
     int i = 0;
     //print capacity
     i = skipToNumber(line, i);
-    i = printAttribute(line, "capacity", i);
+    i = printAttribute(line, "capacity", i, false);
     //print enrollment
     i = skipToNumber(line, i);
-    i = printAttribute(line, "enrollment", i);
+    i = printAttribute(line, "enrollment", i, false);
     //print waitlist info
     i = skipWhiteSpace(line, i);
     if (strncmp(&line[i], "Class Wait", 7) != 0){
@@ -203,9 +203,9 @@ static void printCourseEnrollmentInfo(char* line){
         return;
     }
     i = skipToNumber(line, i);
-    i = printAttribute(line, "waitlist_capacity", i);
+    i = printAttribute(line, "waitlist_capacity", i, false);
     i = skipToNumber(line, i);
-    printAttribute(line, "waitlist_total", i);
+    printAttribute(line, "waitlist_total", i, false);
 }
 
 static void printCourseMissingInfo(Course* course){
@@ -222,8 +222,11 @@ static void printCourseMissingInfo(Course* course){
 }
 
 //print attribute, return int to move cursor forward
-static int printAttribute(char* input, char* attribute, int i) {
-    printf("\"%s\":\"", attribute);
+static int printAttribute(char* input, char* attribute, int i, bool isString) {
+    printf("\"%s\":", attribute);
+    if (isString){
+        putchar('\"');
+    }
     while (input[i] != ' ')
     {
         if (isEndOfInput(input[i])){
@@ -232,7 +235,10 @@ static int printAttribute(char* input, char* attribute, int i) {
         putchar(input[i]);
         i++;
     }
-    printf("\",");
+    if (isString){
+        putchar('\"');
+    }
+    putchar(',');
     return i;
 }
 
