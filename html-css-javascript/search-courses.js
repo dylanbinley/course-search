@@ -71,63 +71,6 @@ function generateTable(selectedCourses){
 
 }
 
-function createImage(type){
-    var img, src; 
-    switch(type) {
-        case "open":
-            src = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Ski_trail_rating_symbol-green_circle.svg/1024px-Ski_trail_rating_symbol-green_circle.svg.png"
-            break;
-        case "waitlist":
-            src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Yellow_triangle.svg/144px-Yellow_triangle.svg.png"
-            break;
-        default:
-            src = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Ski_trail_rating_symbol-blue_square.svg/900px-Ski_trail_rating_symbol-blue_square.svg.png"
-    } 
-    img = document.createElement("img");
-    img.setAttribute("src", src); 
-    img.setAttribute("width", "20");
-    img.setAttribute("height", "20");
-    img.setAttribute("title", type); 
-    img.setAttribute("alt", type); 
-    return img 
-}
-
-function createRating(rating){
-    var div, color;
-    switch(Math.ceil(rating-.5)){
-        case 5: //5-4.5
-            color = "green"
-            break;
-        case 4: //4.49-3.5
-            color = "rgb(0,230,0)";
-            break;
-        case 3: //3.49-2.5
-            color = "orange"
-            break;
-        case 2: //2.49-1.5
-            color = "rgb(255,0, 0)";
-            break;
-        case 1: //<1.5
-        case 0:
-            color = "rgb(200,0, 0)";
-            break;
-        default: //"N/A"
-            color = "gray"
-            break;
-    }
-    div = document.createElement("div");
-    div.innerHTML = rating 
-    div.style.color ="white"
-    div.style.backgroundColor = color
-    div.style.width="35px"
-    div.style.paddingTop = "5px"
-    div.style.paddingBottom = "5px"
-    div.style.marginRight = "auto"
-    div.style.marginLeft= "auto"
-    div.style.fontWeight = "bold"
-    return div;
-}
-
 function splitInput(input){
     var split = input.split(/(?:-| )+/) //split on space/dash
     split = split.filter(function(value, index, arr){ 
@@ -169,24 +112,86 @@ function getClassStatus(course){
     var class_status;
     var enrollment = course.enrollment;
     var capacity = course.capacity;
+    var availability_number = 0; //tracks number of open seats or waitlist total
     if (enrollment == "N/A" || capacity == "N/A"){
         class_status = "unknown";
     }
     else if (enrollment < capacity){
         class_status = "open"
+        availability_number = capacity - enrollment;
     }
     else {
         var waitlist_total = course.waitlist_total;
         var waitlist_capacity = course.waitlist_capacity;
-        if (waitlist_total == "N/A" || waitlist_capacity == "N/A"){
+        if (waitlist_total == "N/A" || waitlist_capacity == "N/A" || waitlist_capacity <= waitlist_total ){
             class_status = "closed";
         }
-        else if (waitlist_capacity > waitlist_total){
+        else {
             class_status= "waitlist";
-        }
-        else{
-            class_status = "closed";
+            availability_number = waitlist_total;
         }
     }
-    return createImage(class_status);
+    return createImage(class_status, availability_number);
+}
+
+function createImage(type, availability_number){
+    var img, src; 
+    switch(type) {
+        case "open":
+            src = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Ski_trail_rating_symbol-green_circle.svg/1024px-Ski_trail_rating_symbol-green_circle.svg.png"
+            break;
+        case "waitlist":
+            src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Yellow_triangle.svg/144px-Yellow_triangle.svg.png"
+            break;
+        default:
+            src = "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Ski_trail_rating_symbol-blue_square.svg/900px-Ski_trail_rating_symbol-blue_square.svg.png"
+    } 
+    img = document.createElement("img");
+    img.setAttribute("src", src); 
+    img.setAttribute("width", "20");
+    img.setAttribute("height", "20");
+    img.setAttribute("alt", type); 
+    if (type == "waitlist"){
+        img.setAttribute("title", "Waitlist total: " + availability_number); 
+    }
+    else{
+        img.setAttribute("title", "Available seats: " + availability_number); 
+    }
+    return img 
+}
+
+function createRating(rating){
+    var div, color;
+    switch(Math.ceil(rating-.5)){
+        case 5: //5-4.5
+            color = "green"
+            break;
+        case 4: //4.49-3.5
+            color = "rgb(0,230,0)";
+            break;
+        case 3: //3.49-2.5
+            color = "orange"
+            break;
+        case 2: //2.49-1.5
+            color = "rgb(255,0, 0)";
+            break;
+        case 1: //<1.5
+        case 0:
+            color = "rgb(200,0, 0)";
+            break;
+        default: //"N/A"
+            color = "gray"
+            break;
+    }
+    div = document.createElement("div");
+    div.innerHTML = rating 
+    div.style.color ="white"
+    div.style.backgroundColor = color
+    div.style.width="35px"
+    div.style.paddingTop = "5px"
+    div.style.paddingBottom = "5px"
+    div.style.marginRight = "auto"
+    div.style.marginLeft= "auto"
+    div.style.fontWeight = "bold"
+    return div;
 }
