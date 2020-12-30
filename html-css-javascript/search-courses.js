@@ -18,6 +18,21 @@ function onStart(data){
 
 function loadLocalClasses(){
     var parsedInput = splitInput(document.getElementById("search").value); 
+    let selectedCourses = []
+    for (var i = 0; i < courses.length; i++){
+        if (courses[i].time != "TBA" 
+            && courses[i].section < 100 //exclude recitations 
+            && courses[i].subject.toLowerCase() == parsedInput[0].toLowerCase() 
+            && courses[i].number >= parsedInput[1] 
+            && courses[i].number <= parsedInput[2]){
+            selectedCourses.push(courses[i]);
+        }
+    }
+    //sort by course number
+    selectedCourses.sort(function(course1,course2){
+        return course1.number - course2.number
+    })
+    //append rows to table
     let table= document.querySelector("table");
     table.innerHTML = ` <thead>
                             <tr>
@@ -30,18 +45,12 @@ function loadLocalClasses(){
                             </tr>
                        </thead>
                      `;
-    for (var i = 0; i < courses.length; i++){
-        if (courses[i].time != "TBA" 
-            && courses[i].section < 100 //exclude recitations 
-            && courses[i].subject.toLowerCase() == parsedInput[0].toLowerCase() 
-            && courses[i].number >= parsedInput[1] 
-            && courses[i].number <= parsedInput[2]){
-
-            let courseNumber= document.createTextNode(courses[i].subject + " " + courses[i].number + " " + courses[i].section);
-            let courseName = document.createTextNode(courses[i].name);
-            let time = document.createTextNode(courses[i].days + ' ' + courses[i].time);
-            let professor = getProfessorObj(courses[i])
-            let classStatus= getClassStatus(courses[i])
+    selectedCourses.forEach(function(course){
+            let courseNumber= document.createTextNode(course.subject + " " + course.number + " " + course.section);
+            let courseName = document.createTextNode(course.name);
+            let time = document.createTextNode(course.days + ' ' + course.time);
+            let professor = getProfessorObj(course)
+            let classStatus= getClassStatus(course)
             let row = table.insertRow();
             row.insertCell().appendChild(courseNumber);
             row.insertCell().appendChild(courseName);
@@ -49,8 +58,7 @@ function loadLocalClasses(){
             row.insertCell().appendChild(professor.name);
             row.insertCell().appendChild(professor.rating);
             row.insertCell().appendChild(classStatus);
-        }
-    }
+    });
 }
 
 function createImage(type){

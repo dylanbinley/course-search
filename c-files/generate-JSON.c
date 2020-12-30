@@ -19,13 +19,15 @@ static bool newCourseFound(char * line, char * subject);
 static bool isTeacherLine(char * line);
 static bool isScheduleLine(char * line);
 static bool isEnrollmentLine(char * line);
+static bool isEndOfInput(int c);
 static int  skipWhiteSpace(char* line, int i);
 static int  skipWord(char* line, int i);
 static int  skipToNumber(char * line, int i);
 
 int main(int argc, char **argv){
-    char line[1000];
+    char initial_line[1000];
     char *subject;
+    char * line;
     if (argc >1){
         subject = argv[1];
     }
@@ -34,7 +36,8 @@ int main(int argc, char **argv){
         return EXIT_FAILURE;
     }
     Course course = {0};
-    while(fgets(line, 1000, stdin) != NULL){
+    while(fgets(initial_line, 1000, stdin) != NULL){
+        line = &initial_line[skipWhiteSpace(initial_line, 0)];
         if (newCourseFound(line,subject)){
             //finish up previous course
             if (course.isValid){
@@ -100,9 +103,9 @@ static void printCourseNameAndNumber(char * line){
     if (line[i] >= 'a' && line[i] <= 'z'){
         printf("=====DELETETHISLINE======");
     }
-    while ((c = line[i]) != EOF && c != '\r' && c != '\n'){
+    while (strncmp(&line[i], "Lecture", 5) != 0 && (c = line[i]) != EOF && c != '\r' && c != '\n'){
         if (c == ' '){
-            if ((c = line[++i]) == ' ' || c == '\r' || c == '\n'){
+            if (strncmp(&line[i+1], "Lecture", 5) == 0 || (c = line[++i]) == ' ' || c == '\r' || c == '\n'){
                 break;
             }
             putchar(' ');
@@ -186,7 +189,6 @@ static void printCourseTeacher(char* line){
 
 static void printCourseEnrollmentInfo(char* line){
     int i = 0;
-    char c;
     //print capacity
     i = skipToNumber(line, i);
     i = printAttribute(line, "capacity", i);
@@ -201,23 +203,9 @@ static void printCourseEnrollmentInfo(char* line){
         return;
     }
     i = skipToNumber(line, i);
-    printf("\"%s\":\"", "waitlist_capacity");
-    while ((c =line[i]) != ' ' && c != '\0' && c != '\r' && c != '\n'){
-        putchar(c);
-        i++;
-    }
-    printf("\",");
-    if (c == '\0' || c == '\r' || c == '\n'){
-        printf("\"waitlist_total\": \"N/A\","); 
-        return;
-    }
-    while ((c = getchar()) < '0' || c > '9'){}
-    printf("\"%s\":\"", "waitlist_total");
-    putchar(c);
-    while (!((c = getchar()) < '0' || c > '9')){
-        putchar(c);
-    }
-    printf("\",");
+    i = printAttribute(line, "waitlist_capacity", i);
+    i = skipToNumber(line, i);
+    printAttribute(line, "waitlist_total", i);
 }
 
 static void printCourseMissingInfo(Course* course){
@@ -236,9 +224,12 @@ static void printCourseMissingInfo(Course* course){
 //print attribute, return int to move cursor forward
 static int printAttribute(char* input, char* attribute, int i) {
     printf("\"%s\":\"", attribute);
-    int c;
-    while ((c =input[i]) != ' '){
-        putchar(c);
+    while (input[i] != ' ')
+    {
+        if (isEndOfInput(input[i])){
+            return -1;
+        }
+        putchar(input[i]);
         i++;
     }
     printf("\",");
@@ -251,10 +242,10 @@ static bool newCourseFound(char * line, char * subject){
 
 static bool isTeacherLine(char * line){
     return strncmp(line, "GA", 2) == 0    || 
-           strncmp(line, "TA", 2) == 0    || 
-           strncmp(line, "RA", 2) == 0    || 
-           strncmp(line, "DEAN", 4) == 0  || 
-           strncmp(line, "INST", 4) == 0;
+        strncmp(line, "TA", 2) == 0    || 
+        strncmp(line, "RA", 2) == 0    || 
+        strncmp(line, "DEAN", 4) == 0  || 
+        strncmp(line, "INST", 4) == 0;
 }
 
 static bool isScheduleLine(char * line){
@@ -265,15 +256,27 @@ static bool isEnrollmentLine(char * line){
     return strncmp(line, "Class Enrl", 10) == 0;
 }
 
+static bool isEndOfInput(int c){
+    return c == EOF  ||
+        c == '\0' ||
+        c == '\r' ||
+        c == '\n';
+}
 static int skipWhiteSpace(char * line, int i){
-    while (line[i] == ' '){
+    while (line[i] == ' ' ){
+        if (isEndOfInput(line[i])){
+            return -1;
+        }
         i++;
     }
     return i;
 }
 
 static int skipWord(char* line, int i){
-    while (line[i] != ' '){
+    while (line[i] != ' ' ){
+        if (isEndOfInput(line[i])){
+            return -1;
+        }
         i++;
     }
     return i;
@@ -281,6 +284,9 @@ static int skipWord(char* line, int i){
 
 static int skipToNumber(char* line, int i){
     while (!(line[i] >='0' && line[i] <='9')){
+        if (isEndOfInput(line[i])){
+            return -1;
+        }
         i++;
     }
     return i;
