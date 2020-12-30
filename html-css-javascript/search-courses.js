@@ -138,7 +138,7 @@ function getProfessorObj(course){
     let info = getRateMyProfessorsInfo(course); 
     if (info != null){
         let link = document.createElement('a');
-        link.href = 'https://www.ratemyprofessors.com/ShowRatings.jsp?tid=' + info.tid
+        link.href = 'https://www.ratemyprofessors.com/ShowRatings.jsp?tid=' + info.id
         link.appendChild(profName);
         return { name : link, rating: createRating(info.rating) }
     }
