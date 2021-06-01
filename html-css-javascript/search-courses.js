@@ -24,8 +24,7 @@ function searchCourses(){
         return;
     }
     for (var i = 0; i < courses.length; i++){
-        if (courses[i].time != "TBA" 
-            && courses[i].section < 100 //exclude recitations 
+        if (courses[i].section < 50 //exclude recitations 
             && courses[i].subject.toLowerCase() == parsedInput[0].toLowerCase() 
             && courses[i].number >= parsedInput[1] 
             && courses[i].number <= parsedInput[2]){
@@ -57,9 +56,14 @@ function generateTable(selectedCourses){
     selectedCourses.forEach(function(course){
         let courseNumber= document.createTextNode(course.subject + " " + course.number + " " + course.section);
         let courseName = document.createTextNode(course.name);
-        let time = document.createTextNode(course.days + ' ' + course.time);
+        let time = course.days === "TBA" ? document.createTextNode("TBA"): document.createTextNode(course.days + ' ' + course.time);
         let professor = getProfessorObj(course)
         let classStatus= getClassStatus(course)
+        /*if (classStatus.alt === "closed" || classStatus.alt === "waitlist"){
+            console.log("skip");
+            return;
+        }
+        */
         let row = table.insertRow();
         row.insertCell().appendChild(courseNumber);
         row.insertCell().appendChild(courseName);
