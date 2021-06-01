@@ -7,9 +7,15 @@
     <script type="text/javascript" src="../data/courses.js"></script>
     <script         type  = "text/javascript"    src="search-courses.js">
     </script>
+    <script>
+        function myFunction() {
+            console.log("function was calleed, loaded p");
+        }
+    </script>
+
     <body onload = "onStart(data)">
         <h1>Course Search Spring 2021</h1>
-        <p>Search for classes below! <br/>
+        <p onload="myFunction()">Search for classes below! <br/>
         For example, search <em>COMP 400-500</em></p>
         <div>
             <input type="text" 
