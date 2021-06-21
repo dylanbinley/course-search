@@ -5,7 +5,7 @@ This website allows you to view course information along with professors ratemyp
 
 Using this app is simple. Just open ```html-css-javascript/index.html``` and search for courses using the search bar. You can view professors' scores in the table and click on their name to see what people had to say about them. 
 
-<img src="image.PNG" width=80% height=80%>
+<img src="images/image.png" width=80% height=80%>
 
 ### About the data
 
