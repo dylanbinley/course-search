@@ -1,5 +1,5 @@
 ## About
-This website allows you to view course information along with professors ratemyprofessors.com rating. I used this to help save time when choosing classes for the 2020/2021 school year.
+This website allows you to view course information for UNC Chapel Hill along with professors' ratemyprofessors.com ratings. I used this to help save time when choosing classes for the 2020/2021 school year.
 
 ## How to Use
 
